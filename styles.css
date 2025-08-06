@@ -136,7 +136,7 @@ header {
     height: calc(100% - 1rem);
     width: 2px;
     background: linear-gradient(to bottom, var(--accent), transparent);
-    transition: background 1s ease;
+    transition: background 0.3s ease;
 }
 
 .company, .school {
