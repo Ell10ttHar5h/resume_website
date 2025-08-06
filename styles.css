@@ -88,7 +88,7 @@ h4 {
     background-color: var(--card);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     border: 1px solid var(--border);
-    transition: all 0.3s ease;
+    transition: all 1s ease;
 }
 
 header {
@@ -96,7 +96,7 @@ header {
     margin-bottom: 3rem;
     padding-bottom: 2rem;
     border-bottom: 1px solid var(--border);
-    transition: border-color 0.3s ease;
+    transition: border-color 1s ease;
 }
 
 .tagline {
@@ -136,7 +136,7 @@ header {
     height: calc(100% - 1rem);
     width: 2px;
     background: linear-gradient(to bottom, var(--accent), transparent);
-    transition: background 0.3s ease;
+    transition: background 1s ease;
 }
 
 .company, .school {
