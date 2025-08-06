@@ -242,7 +242,12 @@ a:hover {
     right: 20px;
     z-index: 110;
 }
-
+.youtube-container {
+    position: fixed;
+    top: 125px;
+    right: 20px;
+    z-index: 110;
+}
 /* Responsive Design */
 @media (max-width: 768px) {
     .columns {
@@ -268,6 +273,11 @@ a:hover {
 
     .linkedin-container {
     top: 70px;
+    right: 10px;
+    }
+
+    .youtube-container {
+    top: 125px;
     right: 10px;
     }
 }
