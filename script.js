@@ -9,10 +9,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Apply the current theme
     if (currentTheme === 'dark') {
         document.body.setAttribute('data-theme', 'dark');
-        themeToggle.innerHTML = '<span class="toggle-icon">☀️</span>';
+        themeToggle.innerHTML = '<span class="toggle-icon">👽</span>';
     } else {
         document.body.removeAttribute('data-theme');
-        themeToggle.innerHTML = '<span class="toggle-icon">🌙</span>';
+        themeToggle.innerHTML = '<span class="toggle-icon">🛸</span>';
     }
     
     // Toggle theme on button click
@@ -21,11 +21,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (document.body.getAttribute('data-theme')) {
             document.body.removeAttribute('data-theme');
             theme = 'light';
-            themeToggle.innerHTML = '<span class="toggle-icon">🌙</span>';
+            themeToggle.innerHTML = '<span class="toggle-icon">🛸</span>';
         } else {
             document.body.setAttribute('data-theme', 'dark');
             theme = 'dark';
-            themeToggle.innerHTML = '<span class="toggle-icon">☀️</span>';
+            themeToggle.innerHTML = '<span class="toggle-icon">👽</span>';
         }
         localStorage.setItem('theme', theme);
     });
@@ -36,10 +36,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (e.matches) {
             document.body.setAttribute('data-theme', 'dark');
-            themeToggle.innerHTML = '<span class="toggle-icon">☀️</span>';
+            themeToggle.innerHTML = '<span class="toggle-icon">👽</span>';
         } else {
             document.body.removeAttribute('data-theme');
-            themeToggle.innerHTML = '<span class="toggle-icon">🌙</span>';
+            themeToggle.innerHTML = '<span class="toggle-icon">🛸</span>';
         }
     });
 });
