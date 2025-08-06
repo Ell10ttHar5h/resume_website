@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js GLF Loader</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+
+        #loading-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            text-align: center;
+        }
+
+        #progress-bar {
+            width: 0%;
+            height: 20px;
+            background-color: #05ebeb;
+            margin-bottom: 10px;
+            border-radius: 2px;
+            border: 1px solid black;
+            box-shadow: inset 0 2px 3px rgba(255, 255, 255, 0.3),
+                        inset 0 -2px 3px rgba(0, 0, 0, 0.3),
+                        0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        #progress-text {
+            font-size: 36px;
+            color: #ffffff;
+        }
+
+        /* Style for the model selector */
+        #model-selector {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border: 2px solid #aaaaaa;
+            border-radius: 5px;
+            font-size: 16px;
+            color: #05ebeb;
+        }
+
+         /* Camera HUD Styles - Two Line Version */
+        #camera-hud {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 250px; /* Fixed width */
+            color: white;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 5px 5px;
+            font-family: 'Arial', sans-serif;
+            font-size: 12px;
+            border-radius: 5px;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .hud-line {
+            display: flex;
+            align-items: right;
+            white-space: nowrap;
+            margin-bottom: 5px;
+        }
+
+        .hud-line:last-child {
+            margin-bottom: 0;
+        }
+
+        .hud-label {
+            color: #05ebeb;
+            margin-right: 5px;
+            font-weight: bold;
+            min-width: 50px;
+        }
+
+        .hud-value {
+            font-family: 'Courier New', monospace;
+            margin-right: 5px;
+        }
+
+        .hud-axis {
+            display: flex;
+            align-items: right;
+            margin-right: 5px;
+        }
+
+        .hud-axis-label {
+            margin-right: 3px;
+            color: #ccc;
+        }
+    </style>
+</head>
+<body>
+    
+<!-- Loading Container -->
+<div id="loading-container">
+    <div id="progress-bar"></div>
+    <span id="progress-text">0%</span>
+</div>
+
+<!-- Model Selector -->
+ <!--
+<select id="model-selector">
+    <option value='{"path":"obj/glb/Parktree001.glb","position":[1.67,0.79,-1.43],"rotation":[-2.86,0.83,2.93],"target":[0.01,0.36,0.06]}'>Parktree</option>
+    <option value='{"path":"obj/glb/dronescan_007.glb","position":[16.19,17.86,-4.33],"rotation":[-2.00,0.90,2.10],"target":[-2.10,4.58,1.70]}'>Drone Scan001</option>
+</select>
+-->
+<!-- Camera HUD - Two Line Version -->
+<div id="camera-hud">
+    <div class="hud-line">
+        <span class="hud-label">Cam Pos: </span>
+        <span class="hud-axis">
+            <span class="hud-axis-label">X:</span>
+            <span class="hud-value" id="cam-pos-x">0.00</span>
+        </span>
+        <span class="hud-axis">
+            <span class="hud-axis-label">Y:</span>
+            <span class="hud-value" id="cam-pos-y">0.00</span>
+        </span>
+        <span class="hud-axis">
+            <span class="hud-axis-label">Z:</span>
+            <span class="hud-value" id="cam-pos-z">0.00</span>
+        </span>
+    </div>
+    <div class="hud-line">
+        <span class="hud-label">Cam Rot: </span>
+        <span class="hud-axis">
+            <span class="hud-axis-label">X:</span>
+            <span class="hud-value" id="cam-rot-x">0.00</span>
+        </span>
+        <span class="hud-axis">
+            <span class="hud-axis-label">Y:</span>
+            <span class="hud-value" id="cam-rot-y">0.00</span>
+        </span>
+        <span class="hud-axis">
+            <span class="hud-axis-label">Z:</span>
+            <span class="hud-value" id="cam-rot-z">0.00</span>
+        </span>
+    </div>
+    <div class="hud-line">
+        <span class="hud-label">Cam Target: </span>
+        <span class="hud-axis">
+            <span class="hud-axis-label">X:</span>
+            <span class="hud-value" id="target-pos-x">0.00</span>
+        </span>
+        <span class="hud-axis">
+            <span class="hud-axis-label">Y:</span>
+            <span class="hud-value" id="target-pos-y">0.00</span>
+        </span>
+        <span class="hud-axis">
+            <span class="hud-axis-label">Z:</span>
+            <span class="hud-value" id="target-pos-z">0.00</span>
+        </span>
+    </div>
+</div>
+
+<!-- stats.js for FPS monitoring (non-module version) -->
+<script src="https://cdn.jsdelivr.net/npm/stats.js@0.17.0/build/stats.min.js"></script>
+
+<script type="module">
+import * as THREE from 'https://esm.sh/three@latest';
+import { GLTFLoader } from 'https://esm.sh/three@latest/examples/jsm/loaders/GLTFLoader.js';
+import { OrbitControls } from 'https://esm.sh/three@latest/examples/jsm/controls/OrbitControls.js';
+
+// Initialize stats.js
+const stats = new Stats();
+stats.showPanel(0); // 0: FPS, 1: MS, 2: MB, 3+: Custom
+document.body.appendChild(stats.dom);
+
+// Make the Stats FPS indicator bigger
+stats.dom.style.transform = 'scale(1.3)';
+stats.dom.style.position = 'absolute';
+stats.dom.style.left = '19px';
+stats.dom.style.top = '13px';
+
+// Scene setup
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor(0x303030);
+document.body.appendChild(renderer.domElement);
+
+// Lighting
+const light = new THREE.AmbientLight(0xffffff, 2.5);
+scene.add(light);
+
+// Variable to store the current loaded object
+let currentObject = null;
+
+// Initialize OrbitControls
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; // Enable damping (inertia)
+controls.dampingFactor = 0.05; // Damping inertia factor
+controls.screenSpacePanning = true; // Allow panning in screen space
+controls.minDistance = 1; // Minimum zoom distance
+controls.maxDistance = 100; // Maximum zoom distance
+controls.maxPolarAngle = Math.PI / 2; // Limit vertical rotation
+
+// Variables for camera animation
+let isAnimatingCamera = false;
+let animationStartTime = 0;
+const animationDuration = 2000; // 1.5 seconds
+let startPosition = new THREE.Vector3();
+let startRotation = new THREE.Euler();
+let startTarget = new THREE.Vector3();
+let targetPosition = new THREE.Vector3();
+let targetRotation = new THREE.Euler();
+let targetTarget = new THREE.Vector3();
+
+// Function to animate camera transition
+function animateCameraTransition(timestamp) {
+    if (!isAnimatingCamera) return;
+    
+    if (animationStartTime === 0) {
+        animationStartTime = timestamp;
+    }
+    
+    const elapsed = timestamp - animationStartTime;
+    const progress = Math.min(elapsed / animationDuration, 1);
+    
+    // Use easing function for smoother transition (easeInOutCubic)
+    const easedProgress = progress < 0.5 
+        ? 4 * progress * progress * progress 
+        : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+    
+    // Interpolate position
+    camera.position.lerpVectors(startPosition, targetPosition, easedProgress);
+    
+    // Interpolate rotation using slerp for quaternions
+    const startQuaternion = new THREE.Quaternion().setFromEuler(startRotation);
+    const targetQuaternion = new THREE.Quaternion().setFromEuler(targetRotation);
+    const currentQuaternion = new THREE.Quaternion();
+    currentQuaternion.slerpQuaternions(startQuaternion, targetQuaternion, easedProgress);
+    camera.rotation.setFromQuaternion(currentQuaternion);
+    
+    // Interpolate target
+    controls.target.lerpVectors(startTarget, targetTarget, easedProgress);
+    controls.update();
+    
+    if (progress < 1) {
+        requestAnimationFrame(animateCameraTransition);
+    } else {
+        isAnimatingCamera = false;
+        animationStartTime = 0;
+    }
+}
+
+// Function to set camera position, rotation and target with animation
+function setCameraPosition(position, rotation, target) {
+    // Store current camera state as starting point
+    startPosition.copy(camera.position);
+    startRotation.copy(camera.rotation);
+    startTarget.copy(controls.target);
+    
+    // Set target states
+    targetPosition.set(position[0], position[1], position[2]);
+    targetRotation.set(rotation[0], rotation[1], rotation[2]);
+    targetTarget.set(target[0], target[1], target[2]);
+    
+    // Start animation
+    isAnimatingCamera = true;
+    animationStartTime = 0;
+    requestAnimationFrame(animateCameraTransition);
+}
+
+// Function to load GLB models with camera positioning
+function loadGLB(config) {
+    // Get references to the progress elements
+    const progressBar = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
+    const loadingContainer = document.getElementById('loading-container');
+    loadingContainer.style.display = 'block';
+
+    const loader = new GLTFLoader();
+    loader.load(config.path, (gltf) => {
+        if (currentObject) {
+            scene.remove(currentObject);
+        }
+        currentObject = gltf.scene;
+        scene.add(currentObject);
+        loadingContainer.style.display = 'none';
+        
+        // Set camera position, rotation and target after model is loaded
+        setCameraPosition(
+            config.position, 
+            config.rotation, 
+            config.target // Optional target parameter
+        );
+        
+        console.log(`${config.path} loaded successfully!`);
+        console.log(`Camera set to position: ${config.position} and rotation: ${config.rotation}`);
+        if (config.target) {
+            console.log(`Camera target set to: ${config.target}`);
+        }
+    },
+    function (xhr) {
+        // Progress callback
+        const percentComplete = (xhr.loaded / xhr.total) * 100;
+        progressBar.style.width = `${percentComplete}%`;
+        progressText.textContent = `${Math.round(percentComplete)}%`;
+    }, undefined, (error) => {
+        console.error('Error loading GLB:', error);
+    });
+}
+
+// Function to update camera HUD
+function updateCameraHUD() {
+    // Update position values
+    document.getElementById('cam-pos-x').textContent = camera.position.x.toFixed(2);
+    document.getElementById('cam-pos-y').textContent = camera.position.y.toFixed(2);
+    document.getElementById('cam-pos-z').textContent = camera.position.z.toFixed(2);
+    
+    // Update rotation values (in radians)
+    document.getElementById('cam-rot-x').textContent = camera.rotation.x.toFixed(2);
+    document.getElementById('cam-rot-y').textContent = camera.rotation.y.toFixed(2);
+    document.getElementById('cam-rot-z').textContent = camera.rotation.z.toFixed(2);
+    
+    // Update target position values
+    document.getElementById('target-pos-x').textContent = controls.target.x.toFixed(2);
+    document.getElementById('target-pos-y').textContent = controls.target.y.toFixed(2);
+    document.getElementById('target-pos-z').textContent = controls.target.z.toFixed(2);
+    
+    requestAnimationFrame(updateCameraHUD);
+}
+
+// Start HUD updates
+updateCameraHUD();
+
+// Animation Loop
+function animate() {
+    stats.begin();
+    requestAnimationFrame(animate);
+    if (!isAnimatingCamera) {
+        controls.update(); // Only update controls if we're not animating the camera
+    }
+    renderer.render(scene, camera);
+    stats.end();
+}
+animate();
+
+// Handle Window Resize
+window.addEventListener('resize', () => {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    renderer.setSize(width, height);
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+});
+
+// Add an event listener to the model selector
+const modelSelector = document.getElementById('model-selector');
+modelSelector.addEventListener('change', (event) => {
+    try {
+        const config = JSON.parse(event.target.value);
+        loadGLB(config);
+    } catch (error) {
+        console.error('Error parsing model config:', error);
+    }
+});
+
+// Load the initial model
+const initialConfig = JSON.parse(modelSelector.value);
+loadGLB(initialConfig);
+
+</script>
+</body>
+</html>
