@@ -14,15 +14,15 @@
 
 /* Dark Theme */
 [data-theme="dark"] {
-    --primary: #e2d5c1;
+    --primary: #b9b9b9;
     --secondary: #b8a692;
-    --accent: #c9a88e;
+    --accent: #96bd81;
     --light: #3a3a3a;
     --dark: #1e1e1e;
     --text: #e0e0e0;
-    --text-light: #a0a0a0;
+    --text-light: #cfcfcf;
     --background: #252525;
-    --card: #2e2e2e;
+    --card: #3d3d3d;
     --border: #444444;
 }
 
@@ -284,7 +284,7 @@ a:hover {
 
 /* Special Elements */
 .about {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     line-height: 1.9;
     text-align: center;
     max-width: 800px;
